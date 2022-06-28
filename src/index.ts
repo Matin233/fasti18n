@@ -16,7 +16,6 @@ import packageJson from "../package.json";
     pattern: "**/*.{vue,js,ts}",
     ignore: ["node_modules/**", "**/*.d.ts", "**/*.spec.ts", "**/*.min.js"],
     output: "i18n/zh-CN.json",
-    useUniqKey: false,
     importPath: "",
   };
   try {
@@ -24,11 +23,11 @@ import packageJson from "../package.json";
       path.resolve(process.cwd(), "package.json"),
       "utf8"
     );
-    const config: { sugar18: ConfigOptions } = JSON.parse(localPackageJson);
-    if (config.sugar18) {
+    const config: { fasti18n: ConfigOptions } = JSON.parse(localPackageJson);
+    if (config.fasti18n) {
       options = {
         ...options,
-        ...config.sugar18,
+        ...config.fasti18n,
       };
     }
   } catch (err) {
@@ -44,6 +43,7 @@ import packageJson from "../package.json";
     .requiredOption("-i --import <importPath>", "[必需]导入的I18N对象路径，eg: '@/lib/i18n'，会自动生成 import I18N from @/lib/i18n")
     .option("-s --scope <scope>", "限制查找的范围，默认查找项目下全部文件")
     .option("-p --output <output>", "输出路径，默认" + options.output)
+    .option("-ig --ignore <ignoreList...>", "指定的路径查找时会被跳过，多个路径使用空格隔开")
     .parse(process.argv)
   
   const opts = program.opts()
@@ -52,6 +52,13 @@ import packageJson from "../package.json";
   }
   if (opts.scope) {
     options.pattern = opts.scope + "/" + options.pattern
+  }
+  // 忽略指定路径下的文件
+  if (Array.isArray(opts.ignore)) {
+    const mapOpts = opts.ignore.map(item => {
+      return item + "/**"
+    })
+    options.ignore = [...options.ignore, ...mapOpts]
   }
   // 必须指定引入的从vue-i18n导出对象的路径，方便在script内部自动生成import语句
   if (!options.importPath) {
@@ -79,7 +86,6 @@ import packageJson from "../package.json";
         const { result } = new Transformer({
           code: sourceCode,
           locales,
-          useUniqKey: options.useUniqKey,
           importPath: options.importPath,
           filename,
         });

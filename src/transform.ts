@@ -43,10 +43,11 @@ function createInterpolationNode(content: string) {
   };
 }
 
-interface Options extends ConfigOptions {
+interface Options {
   code: string;
   locales: Record<string, string>;
   filename: string;
+  importPath: string;
 }
 
 class Transformer {
