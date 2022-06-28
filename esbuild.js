@@ -8,7 +8,7 @@ esbuild
     bundle: true,
     minify: true,
     platform: "node",
-    sourcemap: true,
+    sourcemap: false,
     target: ["node14"],
     loader: {
       ".ts": "ts",
@@ -16,7 +16,6 @@ esbuild
     tsconfig: "./tsconfig.json",
     plugins: [nodeExternalsPlugin()],
     outfile: "./lib/index.js",
-    sourcemap: true,
   })
   .then(() => {
     console.log(chalk.green("compiled success"));
