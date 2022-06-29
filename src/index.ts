@@ -7,6 +7,7 @@ import { logInfo, logError, logNote, logWarn, mkdirSync } from "./utils";
 import { ConfigOptions } from "./typings";
 import packageJson from "../package.json";
 import Walker from "./walker";
+import { parse } from "./toTsv";
 
 (function () {
   // node version must >= 14
@@ -53,6 +54,7 @@ import Walker from "./walker";
     )
     .option("-e --entry <entryFile>", "通过入口文件的依赖查找")
     .option("--alias <aliasList...>", "[--entry指定时]import中使用的别名列表，如@:src标识用@代替src路径")
+    .option("--tsv", "额外输出tsv文件")
     .parse(process.argv);
 
   const opts = program.opts();
@@ -105,6 +107,14 @@ import Walker from "./walker";
       JSON.stringify(locales, null, "\t"),
       "utf8"
     );
+    if (opts.tsv) {
+      const tsv = parse(locales);
+      fs.writeFileSync(
+        outputJSONPath.replace(".json", ".tsv"),
+        tsv,
+        "utf8"
+      );
+    }
     logNote("🎉🎉🎉 Extract successfully!");
   } else {
     logWarn(
