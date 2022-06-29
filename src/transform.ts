@@ -261,6 +261,12 @@ class Transformer {
     return ast;
   };
 
+  /**
+   * 为JS代码混入模版t函数
+   * @param code 
+   * @param isInTemplate 
+   * @returns 
+   */
   transformJS = (code: string, isInTemplate?: boolean) => {
     const ast = parseJS(code);
     let shouldImportVar = false;
