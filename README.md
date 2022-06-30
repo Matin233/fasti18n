@@ -2,6 +2,12 @@
 
 A nodejs cli tool that transforms chinese characters automaticly, based on [sweet-i18n/sugar18](https://github.com/wood3n/sweet-i18n/tree/master/packages/sugar18)
 
+## Install
+
+```bash
+npm i -g fasti18n
+```
+
 ## Usage
 
 默认已设置为错误的命令提供帮助（Default is set to help with incorrect commands）
