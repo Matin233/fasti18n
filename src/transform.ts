@@ -225,6 +225,42 @@ class Transformer {
       return ast;
     }
 
+    // 优先处理Vue模版插值语法，eg: <div>有 {item} 个任务</div>
+    if (ast.type === 1) {
+      const isPureNode = !ast.children.find((node) => {
+        return node.type === 1
+      })
+      const containTextNode = ast.children.find((node) => {
+        return node.type === 2 && node.content.trim() !== ""
+      })
+      const containChinese = isPureNode && hasChineseCharacter(ast.loc.source)
+      if (containChinese && containTextNode) {
+        let textTemplate = ""
+        let args: string[] = []
+        ast.children.forEach(node => {
+          if (node.type === 2) {
+            textTemplate += node.content
+          } else {
+            textTemplate += "%s"
+            args.push(node.loc.source.replace("{{", "").replace("}}", ""))
+          }
+        })
+        if (args.length > 0) {
+          const localeKey = this.extractChar(textTemplate)
+          const transformNode = {
+            ...ast,
+            children: [{
+              type: NodeTypes.INTERPOLATION,
+              loc: {
+                source: `{{ $i18n.tExtend('${localeKey}',[${args + ""}]) }}`
+              }
+            }]
+          }
+          return transformNode
+        }
+      }
+    }
+
     if (ast.props.length) {
       // @ts-expect-error 类型“{ name: string; type: number; loc: { source: string; }; }”缺少类型“DirectiveNode”中的以下属性: exp, arg, modifiersts(2322)
       ast.props = ast.props.map((prop) => {
@@ -335,6 +371,11 @@ class Transformer {
       StringLiteral: {
         exit: (path) => {
           if (hasChineseCharacter(path.node.extra?.rawValue as string)) {
+            // 不翻译console
+            const isConsole = this.isConsoleExpression(path);
+            if (isConsole) {
+              return
+            }
             const localeKey = this.extractChar(
               path.node.extra?.rawValue as string
             );
@@ -351,12 +392,6 @@ class Transformer {
                 )
               );
             } else if (this.fileType === FileType.TS) {
-              // 不翻译console
-              const isConsole = this.isConsoleExpression(path);
-              if (isConsole) {
-                return
-              }
-
               shouldImportVar = true;
               path.replaceWith(
                 t.callExpression(

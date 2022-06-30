@@ -88,10 +88,9 @@ export function generateSfc(descriptor: SFCDescriptor) {
 }
 
 export function generateTemplate(
-  templateAst: ElementNode | TemplateChildNode,
+  templateAst: ElementNode | TemplateChildNode | any,
   children = ""
 ): string {
-  // @ts-expect-error 类型“InterpolationNode”上不存在属性“children”。
   if (templateAst?.children?.length) {
     // @ts-expect-error 类型“InterpolationNode”上不存在属性“children”
     children = templateAst.children.reduce((result, child) => {
