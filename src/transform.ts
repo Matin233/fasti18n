@@ -1,4 +1,4 @@
-import babelTraverse, { Visitor } from "@babel/traverse";
+import babelTraverse, { NodePath, Visitor } from "@babel/traverse";
 import * as t from "@babel/types";
 import path from "path";
 import { ElementNode, SimpleExpressionNode } from "@vue/compiler-core";
@@ -11,7 +11,7 @@ import {
 } from "./generator";
 import { hasChineseCharacter, logError } from "./utils";
 import { generateHash } from "./hash";
-import { ConfigOptions, FileType, NodeTypes } from "./typings";
+import { FileType, NodeTypes } from "./typings";
 
 function createDirectiveAttr(type: string, name: string, value: string) {
   // 处理特殊的事件属性
@@ -312,7 +312,7 @@ class Transformer {
               path.node.extra?.rawValue as string
             );
 
-            if (this.fileType === FileType.JS || this.fileType === FileType.TS) {
+            if (this.fileType === FileType.JS) {
               shouldImportVar = true;
               path.replaceWith(
                 t.callExpression(
@@ -323,6 +323,30 @@ class Transformer {
                   [t.stringLiteral(localeKey)]
                 )
               );
+            } else if (this.fileType === FileType.TS) {
+              // 不翻译console
+              const isConsole = this.isConsoleExpression(path);
+              if (isConsole) {
+                return
+              }
+
+              shouldImportVar = true;
+              path.replaceWith(
+                t.callExpression(
+                  t.memberExpression(
+                    t.callExpression(
+                      t.memberExpression(
+                        t.identifier(this.importVar),
+                        t.identifier("t")
+                      ),
+                      [t.stringLiteral(localeKey)]
+                    ),
+                    // Fix(Vue-i18n): Type 'LocaleMessages' is not assignable to type 'string'
+                    t.identifier("toString")
+                  ),
+                  []
+                )
+              );
             } else if (this.fileType === FileType.VUE) {
               if (isInTemplate) {
                 path.replaceWith(
@@ -331,13 +355,16 @@ class Transformer {
                   ])
                 );
               } else {
-                // this.$t
+                // this.$t.toString()
+                // Fix(Vue-i18n): Type 'TranslateResult' is not assignable to type 'string'.
                 path.replaceWith(
-                  t.callExpression(
-                    t.memberExpression(t.thisExpression(), t.identifier("$t")),
-                    [t.stringLiteral(localeKey)]
-                  )
-                );
+                  t.callExpression(t.memberExpression(
+                    t.callExpression(
+                      t.memberExpression(t.thisExpression(), t.identifier("$t")),
+                      [t.stringLiteral(localeKey)]
+                    ), t.identifier("toString")
+                  ), []
+                ));
               }
             }
           }
@@ -472,6 +499,34 @@ class Transformer {
     this.locales[key] = locale;
     return key;
   };
+
+  /**
+   * 不翻译`console.log("中文")`里面的中文
+   * @param path 
+   */
+  isConsoleExpression(path: NodePath) {
+    const parentNode = path.parentPath ? path.parentPath.node : null;
+    if (!parentNode) {
+      return false
+    }
+    const isCallExpression = t.isCallExpression(parentNode)
+    if (isCallExpression) {
+      const callExpressionNode = parentNode as t.CallExpression;
+      const isMemberExpression = t.isMemberExpression(callExpressionNode.callee);
+      if (isMemberExpression) {
+        const memberExpression = callExpressionNode.callee as t.MemberExpression;
+        const isIndentifier = t.isIdentifier(memberExpression.object)
+        if (isIndentifier) {
+          const object = memberExpression.object as t.Identifier
+          const isConsole = object.name === 'console'
+          if (isConsole) {
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
 }
 
 export default Transformer;
