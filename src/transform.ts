@@ -13,6 +13,13 @@ import { hasChineseCharacter, logError } from "./utils";
 import { generateHash } from "./hash";
 import { FileType, NodeTypes } from "./typings";
 
+/**
+ * 创建Vue指令属性的ast对象
+ * @param type
+ * @param name 
+ * @param value 
+ * @returns 
+ */
 function createDirectiveAttr(type: string, name: string, value: string) {
   // 处理特殊的事件属性
   if (type === "on") {
@@ -34,6 +41,11 @@ function createDirectiveAttr(type: string, name: string, value: string) {
   };
 }
 
+/**
+ * 创建Vue插值节点
+ * @param content 
+ * @returns 
+ */
 function createInterpolationNode(content: string) {
   return {
     type: NodeTypes.INTERPOLATION,
@@ -91,6 +103,12 @@ class Transformer {
     this.startTransform();
   }
 
+  /**
+   * 任务列表
+   * - 提取中文到locales返回key
+   * - 根据得到的key为代码混入翻译函数和import导入
+   * - 输出生成的新代码
+   */
   startTransform() {
     if (!Object.values(FileType).includes(this.fileType)) {
       logError(`Unsupported file type: ${this.filename}`);
@@ -138,6 +156,11 @@ class Transformer {
     }
   }
 
+  /**
+   * JS代码是否含有中文字符
+   * @param code 
+   * @returns 
+   */
   hasChineseCharacterInJS = (code: string) => {
     let result = false;
     babelTraverse(parseJS(code), {
@@ -173,6 +196,8 @@ class Transformer {
 
   /**
    * 转换template节点
+   * 
+   * 为Vue SFC template模版混入模版t函数，返回AST对象结果
    */
   transformTemplate = (ast: ElementNode) => {
     /**
@@ -262,7 +287,9 @@ class Transformer {
   };
 
   /**
-   * 为JS代码混入模版t函数
+   * 转换JS代码
+   * 
+   * 为JS代码混入模版t函数，返回AST对象结果
    * @param code 
    * @param isInTemplate 
    * @returns 
@@ -493,6 +520,11 @@ class Transformer {
     return ast;
   };
 
+  /**
+   * 提取存储中文文本(locales)，返回MD5的Hash值作为key
+   * @param char 
+   * @returns 
+   */
   extractChar = (char: string) => {
     const locale = char.trim();
     const key = generateHash(locale);

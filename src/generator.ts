@@ -28,7 +28,7 @@ export function generateInterpolation(
 }
 
 /**
- * 生成script内部的JS
+ * 根据AST生成JS代码
  */
 export function generateJS(ast: ParseResult<File> | ParseResult<Expression>) {
   // that's a hack, because @babel/generator will give a semi after a callexpression
