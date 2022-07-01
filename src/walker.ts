@@ -32,7 +32,7 @@ class Walker {
 
     this.visitedList = new Set();
     const deps = this.getDependency(this.filename);
-    this.dependencyList = this.traverseDeps(deps);
+    this.dependencyList = [...this.traverseDeps(deps), ...deps];
     // this.dependencyList.forEach((dep) => console.log(dep));
   }
 
