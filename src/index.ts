@@ -104,7 +104,7 @@ import { parse } from "./toTsv";
 
     fs.writeFileSync(
       outputJSONPath,
-      JSON.stringify(locales, null, "\t"),
+      JSON.stringify(locales, null, "  "),
       "utf8"
     );
     if (opts.tsv) {
