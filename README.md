@@ -1,6 +1,6 @@
 # fast i18n
 
-A nodejs cli tool that transforms chinese characters automaticly, based on [sweet-i18n/sugar18](https://github.com/wood3n/sweet-i18n/tree/master/packages/sugar18)
+A nodejs cli tool that transforms chinese characters automaticly, based on [sweet-i18n/sugar18](https://github.com/wood3n/sweet-i18n/tree/master/packages/sugar18) [[Docs](https://sweet.icodex.me/docs/usage)]
 
 ## Install
 
