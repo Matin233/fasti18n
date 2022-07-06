@@ -1,6 +1,8 @@
 # fast i18n
 
-A nodejs cli tool that transforms chinese characters automaticly, based on [sweet-i18n/sugar18](https://github.com/wood3n/sweet-i18n/tree/master/packages/sugar18) [[Docs](https://sweet.icodex.me/docs/usage)]
+A nodejs cli tool that transforms chinese characters automaticly, based on [sweet-i18n/sugar18](https://github.com/wood3n/sweet-i18n/tree/master/packages/sugar18) [[Docs](https://sweet.icodex.me/docs/usage)]. Many thanks to the original author!
+
+Compared with the original plugin, support for `Vue2 Class Component` and `TypeScript` has been added. Optimized extraction support for concatenated strings (eg: `num + 'days'`) and Vue interpolation templates (eg: `{{ num }} + 'days'`), exporting tsv files, specifying extraction ranges, etc. The plugin is still under development and there may be some bugs.
 
 ## Install
 
