@@ -367,6 +367,61 @@ class Transformer {
           }
         },
       },
+      // 计算表达式。a + 'b' + c
+      BinaryExpression: {
+        exit: (path) => {
+          // 连续相加的表达式会依序返回多条结果，取最长的那一条
+          if (path.node.operator === "+" && !t.isBinaryExpression(path.parentPath)) {
+            // 由于右节点不可能为计算表达式，故只需要遍历左节点
+            let leftNode = path.node
+            let rightNode = null
+            let textTemplate = ""
+            let args: any[] = []
+            while (true) {
+              let endLoop: boolean
+              if (t.isBinaryExpression(leftNode)) {
+                rightNode = leftNode.right
+                leftNode = leftNode.left as t.BinaryExpression
+              }
+
+              if (t.isStringLiteral(rightNode)) {
+                textTemplate = rightNode.value + textTemplate
+              } else if (rightNode !== null){
+                textTemplate = "%s" + textTemplate
+                args.unshift(rightNode)
+              }
+
+              if (t.isBinaryExpression(leftNode)) {
+                endLoop = false
+              } else if (t.isStringLiteral(leftNode)) {
+                textTemplate = (leftNode as t.StringLiteral).value + textTemplate
+                endLoop = true
+              } else {
+                textTemplate = "%s" + textTemplate
+                args.unshift(leftNode)
+                endLoop = true
+              }
+
+              if (endLoop) break
+            }
+            if (textTemplate.replace(/%s/g, "").trim() !== "" && args.length > 0 && hasChineseCharacter(textTemplate)) {
+              const localeKey = this.extractChar(textTemplate.replace(/"/g, `\\"`));
+              path.replaceWith(
+                t.callExpression(
+                  t.memberExpression(
+                    t.identifier(this.importVar),
+                    t.identifier("tExtend")
+                  ),
+                  [
+                    t.stringLiteral(localeKey),
+                    t.arrayExpression(args)
+                  ]
+                )
+              )
+            }
+          }
+        }
+      },
       // 字符串字面量
       StringLiteral: {
         exit: (path) => {
@@ -376,6 +431,11 @@ class Transformer {
             if (isConsole) {
               return
             }
+            // 计算表达式的字符串在BinaryExpression处理
+            if (t.isBinaryExpression(path.parentPath)) {
+              return
+            }
+
             const localeKey = this.extractChar(
               path.node.extra?.rawValue as string
             );
