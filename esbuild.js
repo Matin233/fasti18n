@@ -8,7 +8,7 @@ esbuild
     bundle: true,
     minify: true,
     platform: "node",
-    sourcemap: false,
+    sourcemap: true,
     target: ["node14"],
     loader: {
       ".ts": "ts",
