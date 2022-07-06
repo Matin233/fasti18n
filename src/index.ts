@@ -94,6 +94,7 @@ import { parse } from "./toTsv";
   if (opts.entry) {
     const deps = new Walker({ filename: path.resolve("./", opts.entry), aliasList: opts.alias })
       .dependencyList;
+    deps.push(opts.entry);
     deps.forEach(task);
   } else {
     glob.sync(options.pattern!, { ignore: options.ignore }).forEach(task);
