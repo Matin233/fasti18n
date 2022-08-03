@@ -4,6 +4,8 @@
   "homepage": "https://github.com/matin233/fasti18n",
   "description": "a nodejs cli tool that transforms chinese characters automaticly",
   "scripts": {
+    "test": "npm run build & jest",
+    "clean": "ts-node tests/shared/clean.ts",
     "build": "node esbuild.js",
     "pub": "node utils/alpha-publish & npm run build & npm publish"
   },
@@ -20,12 +22,18 @@
   "devDependencies": {
     "@types/babel__generator": "^7.6.3",
     "@types/babel__traverse": "^7.14.2",
+    "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.2.0",
+    "@types/jest": "^28.1.4",
     "@types/node": "^16.11.9",
     "@types/prettier": "^2.4.2",
+    "@types/shelljs": "^0.8.11",
     "esbuild": "^0.13.15",
     "esbuild-node-externals": "^1.4.0",
+    "fs-extra": "^10.1.0",
+    "jest": "^28.1.2",
     "shelljs": "^0.8.5",
+    "ts-jest": "^28.0.5",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   },
