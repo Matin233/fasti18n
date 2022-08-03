@@ -1,6 +1,6 @@
 {
   "name": "fasti18n",
-  "version": "0.0.1-alpha26",
+  "version": "0.0.1-alpha27",
   "homepage": "https://github.com/matin233/fasti18n",
   "description": "a nodejs cli tool that transforms chinese characters automaticly",
   "scripts": {
