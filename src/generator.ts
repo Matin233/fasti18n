@@ -1,5 +1,5 @@
 import { ParseResult } from "@babel/parser";
-import babelGenerator from "@babel/generator";
+import { print as recastGenerator } from "recast";
 import { SFCDescriptor } from "@vue/compiler-sfc";
 import {
   ElementNode,
@@ -18,27 +18,14 @@ import prettier from "prettier";
 export function generateInterpolation(
   ast: ParseResult<File> | ParseResult<Expression>
 ) {
-  // that's a hack, because @babel/generator will give a semi after a callexpression
-  return babelGenerator(ast, {
-    compact: false,
-    jsescOption: {
-      quotes: "single",
-    },
-  }).code.replace(/;/gm, "");
+  return recastGenerator(ast).code;
 }
 
 /**
  * 根据AST生成JS代码
  */
 export function generateJS(ast: ParseResult<File> | ParseResult<Expression>) {
-  // that's a hack, because @babel/generator will give a semi after a callexpression
-  const result = babelGenerator(ast, {
-    jsescOption: {
-      quotes: "single",
-    },
-    // vue2的decorator需要单独写
-    decoratorsBeforeExport: true
-  }).code;
+  const result = recastGenerator(ast).code
 
   return prettier.format(result, {
     parser: "typescript",
@@ -92,8 +79,7 @@ export function generateTemplate(
   children = ""
 ): string {
   if (templateAst?.children?.length) {
-    // @ts-expect-error 类型“InterpolationNode”上不存在属性“children”
-    children = templateAst.children.reduce((result, child) => {
+    children = templateAst.children.reduce((result: string, child: any) => {
       return result + generateTemplate(child);
     }, "");
   }

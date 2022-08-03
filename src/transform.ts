@@ -374,7 +374,7 @@ class Transformer {
           if (path.node.operator === "+" && !t.isBinaryExpression(path.parentPath)) {
             // 由于右节点不可能为计算表达式，故只需要遍历左节点
             let leftNode = path.node
-            let rightNode = null
+            let rightNode: t.Expression | null = null
             let textTemplate = ""
             let args: any[] = []
             while (true) {
